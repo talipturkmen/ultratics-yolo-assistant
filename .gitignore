@@ -2,3 +2,5 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# add .egg.info files and folders
