@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,6 +13,7 @@ class Settings(BaseSettings):
     EMBED_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     CHUNK_TOKEN_TARGET: int = 500
     CHUNK_OVERLAP_TOKENS: int = 50
+    INDEX_SUBDIRS: str = "ultralytics/models,ultralytics/engine,ultralytics/data"
     ULTRALYTICS_PATH: str
 
     model_config = SettingsConfigDict(
@@ -20,3 +22,17 @@ class Settings(BaseSettings):
     )
     print("Settings loaded from .env file")
     print("Settings:", model_config)
+
+    def index_subdirs_list(self) -> list[str]:
+        value = self.INDEX_SUBDIRS
+        if not value:
+            return []
+        stripped = value.strip()
+        if stripped.startswith("["):
+            try:
+                parsed = json.loads(stripped)
+            except json.JSONDecodeError:
+                parsed = None
+            if isinstance(parsed, list):
+                return [str(item).strip() for item in parsed if str(item).strip()]
+        return [item.strip() for item in value.split(",") if item.strip()]

@@ -28,7 +28,8 @@ def main():
         collection_name=config.MONGODB_COLLECTION,
         embed_model_name=config.EMBED_MODEL,
         chunk_token_target=config.CHUNK_TOKEN_TARGET,
-        chunk_overlap_tokens=config.CHUNK_OVERLAP_TOKENS
+        chunk_overlap_tokens=config.CHUNK_OVERLAP_TOKENS,
+        subdirs=config.index_subdirs_list(),
     )
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional
 from . import utils
 from .utils import count_tokens, split_chunks_by_tokens
+from .settings import Settings
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import logging
@@ -23,9 +24,18 @@ def _mongo_connection_hint(error: Exception) -> Optional[str]:
         )
     return None
 
-def index_codebase(repo_path: str, db_uri: str, db_name: str, collection_name: str, embed_model_name: str, chunk_token_target: int, chunk_overlap_tokens: int):
+def index_codebase(
+    repo_path: str,
+    db_uri: str,
+    db_name: str,
+    collection_name: str,
+    embed_model_name: str,
+    chunk_token_target: int,
+    chunk_overlap_tokens: int,
+    subdirs: Optional[list[str]] = None,
+):
     """Walk through the Ultralytics repository and index specified directories into MongoDB."""
-    # Connect to MongoDB
+    # Connect to MongoDB Client
     client = MongoClient(
         db_uri,
         server_api=ServerApi("1"),
@@ -58,9 +68,20 @@ def index_codebase(repo_path: str, db_uri: str, db_name: str, collection_name: s
     embedder = SentenceTransformer(embed_model_name)
     
     # Define which subdirectories to index
-    subdirs = ["ultralytics/models", "ultralytics/engine", "ultralytics/data"]
+    if subdirs is None:
+        try:
+            subdirs = Settings().index_subdirs_list()
+        except Exception:
+            subdirs = ["ultralytics/models", "ultralytics/engine", "ultralytics/data"]
     total_files = 0
     total_chunks = 0
+    
+    # CHUNKING STRATEGY:
+    # 1. Parse each Python file into an AST.
+    # 2. Identify top-level definitions (classes, functions) and global code segments.
+    # 3. Each top-level definition and global code segment becomes a chunk.
+    # 4. If a chunk exceeds chunk_token_target, split it further into smaller chunks
+    #    with chunk_overlap_tokens overlap.
     for subdir in subdirs:
         dir_path = os.path.join(repo_path, subdir)
         if not os.path.isdir(dir_path):

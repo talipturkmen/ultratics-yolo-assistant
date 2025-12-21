@@ -8,7 +8,7 @@ _client = None
 _collection = None
 _embedder = None
 _embed_model_name = None
-_vector_index_name = "default"
+_vector_index_name = "vector_index"
 _embedding_path = "embedding"
 
 def _mongo_connection_hint(error: Exception) -> Optional[str]:
@@ -111,7 +111,7 @@ def get_relevant_chunks(question: str, top_k: int = 5):
                 "path": _embedding_path,
                 "queryVector": query_vector,
                 "numCandidates": num_candidates,
-                "limit": top_k,
+                "limit": top_k, # mandatory in $vectorSearch
             }
         },
         {"$project": {"text": 1, "meta": 1, "score": {"$meta": "vectorSearchScore"}}},
