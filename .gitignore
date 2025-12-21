@@ -1,0 +1,4 @@
+# add pycache files and folders
+__pycache__/
+*.py[cod]
+*$py.class
