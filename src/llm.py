@@ -2,6 +2,8 @@ import os
 import requests
 import logging
 
+from .prompts import SYSTEM_PROMPT
+
 # We'll use environment variables directly for simplicity
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -28,17 +30,7 @@ def generate_answer(question: str, code_chunks: list):
             model = getattr(settings, "OPENROUTER_MODEL", model)
     if not api_key:
         raise RuntimeError("OpenRouter API key is not set. Please set OPENROUTER_API_KEY.")
-    # Build the system and user prompt
-    system_prompt = (
-        "You are an expert assistant for the Ultralytics YOLO codebase. " 
-        "Use the provided code snippets to answer the user's question. " 
-        "Your answer should include two sections: \n" 
-        "**What the code does:** Explanation of the relevant code, and \n" 
-        "**How to use it:** Instructions or examples if applicable. " 
-        "Cite file paths and line numbers for each piece of information, " 
-        "using the format 【filename.py†Lstart-Lend】. " 
-        "If you are unsure or the answer is not in the code, say you are not certain."
-    )
+    
     # Include relevant code context in the user message
     if code_chunks:
         context_str = "\n".join([f"File: {chunk['meta'].get('path')} (L{chunk['meta'].get('start_line')}-L{chunk['meta'].get('end_line')}):\n{chunk['text']}" for chunk in code_chunks])
@@ -46,7 +38,7 @@ def generate_answer(question: str, code_chunks: list):
     else:
         user_message = f"QUESTION: {question}\n\n(No relevant code found in the repository.)"
     messages = [
-        {"role": "system", "content": system_prompt},
+        {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_message}
     ]
     # Make the API request

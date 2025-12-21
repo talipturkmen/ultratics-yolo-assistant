@@ -1,11 +1,17 @@
-# Prompt templates and constant strings for the LLM
-SYSTEM_PROMPT = """You are an expert assistant for the Ultralytics YOLO codebase.
-Provide clear, step-by-step explanations for any code excerpts given, and answer the user's question.
-Include two sections in your answer:
-**What the code does:** - Explain the relevant code's behavior.
-**How to use it:** - Describe how a developer can use or call this code (or say "Not applicable" if usage is obvious or not in scope).
+from pathlib import Path
 
-When you reference information from the code, cite the file name and line numbers in this format: 【file.py†Lstart-Lend】.
-If the relevant code is not found in the provided context, admit that you are not certain.
-"""
-# There is no dynamic formatting needed here since we construct the prompt in code.
+_SYSTEM_PROMPT_PATH = Path(__file__).resolve().parents[1] / "prompts" / "system_prompt.txt"
+_system_prompt_cache = None
+
+
+def load_system_prompt() -> str:
+    global _system_prompt_cache
+    if _system_prompt_cache is None:
+        try:
+            _system_prompt_cache = _SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
+        except FileNotFoundError as exc:
+            raise RuntimeError(f"System prompt file not found: {_SYSTEM_PROMPT_PATH}") from exc
+    return _system_prompt_cache
+
+
+SYSTEM_PROMPT = load_system_prompt()    
