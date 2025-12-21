@@ -1,0 +1,249 @@
+Your Question,Answer,Retrieved Code Snippets,timestamp
+how to use yolo models?,"Based on the provided code snippets, here's a breakdown of available YOLO models:
+
+### What the code does
+The import statements across different task-specific training files indicate that YOLO supports multiple computer vision tasks. Each file corresponds to a distinct task module:
+- **Classification** (`classify/train.py`): For image classification tasks 【ultralytics/models/yolo/classify/train.py†L12】
+- **Oriented Bounding Boxes (OBB)** (`obb/train.py`): For rotated object detection 【ultralytics/models/yolo/obb/train.py†L9】
+- **Segmentation** (`segment/train.py`): For instance segmentation 【ultralytics/models/yolo/segment/train.py†L8】
+- **Ppose Estimation** (`pose/train.py`): For keypoint detection 【ultralytics/models/yolo/pose/train.py†L9】
+- **Detection** (`detect/train.py`): For standard object detection 【ultralytics/models/yolo/detect/train.py†L16】
+
+These imports confirm that YOLO provides specialized models for each task.
+
+### How to use it
+To use these models, specify the task type in your training or inference commands. Examples:
+
+1. **Train a detection model** (e.g., YOLOv8n):  
+   ```bash
+   yolo detect train data=coco.yaml model=yolov8n.pt
+   ```
+
+2. **Run pose estimation inference**:  
+   ```bash
+   yolo pose predict model=yolov8n-pose.pt source='image.jpg'
+   ```
+
+3. **Validate a segmentation model**:  
+   ```bash
+   yolo segment val model=yolov8n-seg.pt data=coco-seg.yaml
+   ```
+
+**Key architectures** (vary by task and size):  
+- `yolov8n` (nano), `yolov8s` (small), `yolov8m` (medium), `yolov8l` (large), `yolov8x` (extra large)  
+- Suffixes indicate tasks: `-pose`, `-seg`, `-obb`, or no suffix for detection. Classification uses separate architectures like `yolov8n-cls`.
+
+> ℹ️ Models are auto-downloaded when specified (e.g., `yolov8n.pt`). For classification, use `model=yolov8n-cls.pt`. Task-specific arguments (`detect`, `segment`, `pose`, `obb`, `classify`) control the model type.","<details><summary>Show retrieved code context</summary>
+<pre><code class='language-python'># ultralytics/models/yolo/classify/train.py L12-L12
+from ultralytics.models import yolo
+</code></pre>
+<pre><code class='language-python'># ultralytics/models/yolo/obb/train.py L9-L9
+from ultralytics.models import yolo
+</code></pre>
+<pre><code class='language-python'># ultralytics/models/yolo/segment/train.py L8-L8
+from ultralytics.models import yolo
+</code></pre>
+<pre><code class='language-python'># ultralytics/models/yolo/pose/train.py L9-L9
+from ultralytics.models import yolo
+</code></pre>
+<pre><code class='language-python'># ultralytics/models/yolo/detect/train.py L16-L16
+from ultralytics.models import yolo
+</code></pre>
+</details>",2025-12-21 17:55:56.186661
+can you provide me an example of segmentation using yolo models?,"'Based on the provided code snippets, here's how segmentation works in Ultralytics YOLO models:
+
+### What the Code Does
+1. **Segmentation Prediction**  
+   The `YOLOEVPSegPredictor` class combines detection and segmentation capabilities for YOLO-EVP models. It inherits from both detection and segmentation predictors.  
+   【ultralytics/models/yolo/yoloe/predict.py†L159-L162】
+
+2. **Segmentation Training**  
+   The `YOLOESegVPTrainer` class handles training segmentation models with Vision Prompt capabilities by inheriting from both YOLO-EVP and segmentation trainers.  
+   【ultralytics/models/yolo/yoloe/train_seg.py†L119-L122】
+
+3. **Auto-Annotation**  
+   The `auto_annotate` function generates segmentation masks using:
+   - A YOLO detection model to find objects
+   - A SAM (Segment Anything Model) to convert detections into segmentation masks  
+   【ultralytics/data/annotator.py†L10-L53】
+
+4. **Bounding Box to Segment Conversion**  
+   `yolo_bbox2segment` converts existing bounding box labels to segmentation format using SAM to generate masks.  
+   【ultralytics/data/converter.py†L580-L624】
+
+---
+
+### How to Use It
+#### Example 1: Auto-Annotation for Segmentation
+```python
+from ultralytics.data.annotator import auto_annotate
+
+# Generate segmentation masks for images
+auto_annotate(
+    data=""path/to/images"",
+    det_model=""yolov8n.pt"",  # Detection model
+    sam_model=""sam_b.pt"",     # Segmentation model
+    output_dir=""auto_labels""  # Output directory
+)
+```
+This will create YOLO-format segmentation labels in `auto_labels`.
+
+#### Example 2: Convert Bounding Boxes to Segments
+```python
+from ultralytics.data.converter import yolo_bbox2segment
+
+# Convert existing bounding box labels to segmentation format
+yolo_bbox2segment(
+    im_dir=""path/to/images"",
+    save_dir=""seg_labels"",
+    sam_model=""sam_b.pt""
+)
+```
+Requires directory structure:
+```
+images/
+├── image1.jpg
+labels/  # Existing bbox labels
+├── image1.txt
+```
+
+#### Example 3: Train a Segmentation Model
+```python
+from ultralytics import YOLO
+
+# Load a pretrained segmentation model
+model = YOLO(""yolov8n-seg.pt"")  
+
+# Train with segmentation dataset
+model.train(
+    data=""coco-seg.yaml"", 
+    epochs=50,
+    imgsz=640
+)
+```
+
+### Key Notes:
+1. **Input Requirements**  
+   - For auto-annotation: Raw images (no labels needed)
+   - For bbox conversion: Existing bounding box labels in YOLO format
+
+2. **Model Options**  
+   - Detection: `yolov8*.pt` models
+   - Segmentation: `sam_b.pt` (default) or other SAM variants
+
+3. **Output Format**  
+   Creates `.txt` files with normalized polygon coordinates:
+   ```
+   class_id x1 y1 x2 y2 ... xn yn
+   ```
+
+For full implementation details, see the referenced files and line numbers.","'<details><summary>Show retrieved code context</summary>
+<pre><code class='language-python'># ultralytics/models/yolo/yoloe/predict.py L159-L162
+class YOLOEVPSegPredictor(YOLOEVPDetectPredictor, SegmentationPredictor):
+    &quot;&quot;&quot;Predictor for YOLO-EVP segmentation tasks combining detection and segmentation capabilities.&quot;&quot;&quot;
+
+    pass
+</code></pre>
+<pre><code class='language-python'># ultralytics/models/yolo/yoloe/train_seg.py L119-L122
+class YOLOESegVPTrainer(YOLOEVPTrainer, YOLOESegTrainerFromScratch):
+    &quot;&quot;&quot;Trainer for YOLOE segmentation models with Vision Prompt (VP) capabilities.&quot;&quot;&quot;
+
+    pass
+</code></pre>
+<pre><code class='language-python'># ultralytics/data/converter.py L580-L624
+def yolo_bbox2segment(im_dir: str | Path, save_dir: str | Path | None = None, sam_model: str = &quot;sam_b.pt&quot;, device=None):
+    &quot;&quot;&quot;Convert existing object detection dataset (bounding boxes) to segmentation dataset or oriented bounding box (OBB)
+    in YOLO format. Generate segmentation data using SAM auto-annotator as needed.
+
+    Args:
+        im_dir (str | Path): Path to image directory to convert.
+        save_dir (str | Path, optional): Path to save the generated labels, labels will be saved into `labels-segment`
+            in the same directory level of `im_dir` if save_dir is None.
+        sam_model (str): Segmentation model to use for intermediate segmentation data.
+        device (int | str, optional): The specific device to run SAM models.
+
+    Notes:
+        The input directory structure assumed for dataset:
+
+            - im_dir
+                ├─ 001.jpg
+                ├─ ...
+                └─ NNN.jpg
+            - labels
+                ├─ 001.txt
+                ├─ ...
+                └─ NNN.txt
+    &quot;&quot;&quot;
+    from ultralytics import SAM
+    from ultralytics.data import YOLODataset
+    from ultralytics.utils.ops import xywh2xyxy
+
+    # NOTE: add placeholder to pass class index check
+    dataset = YOLODataset(im_dir, data=dict(names=list(range(1000)), channels=3))
+    if len(dataset.labels[0][&quot;segments&quot;]) &gt; 0:  # if it&#x27;s segment data
+        LOGGER.info(&quot;Segmentation labels detected, no need to generate new ones!&quot;)
+        return
+
+    LOGGER.info(&quot;Detection labels detected, generating segment labels by SAM model!&quot;)
+    sam_model = SAM(sam_model)
+    for label in TQDM(dataset.labels, total=len(dataset.labels), desc=&quot;Generating segment labels&quot;):
+        h, w = label[&quot;shape&quot;]
+        boxes = label[&quot;bboxes&quot;]
+        if len(boxes) == 0:  # skip empty labels
+            continue
+        boxes[:, [0, 2]] *= w
+        boxes[:, [1, 3]] *= h
+        im = cv2.imread(label[&quot;im_file&quot;])
+        sam_results = sam_model(im, bboxes=xywh2xyxy(boxes), verbose=False, save=False, device=device)
+        label[&quot;segments&quot;] = sam_results[0].masks.xyn
+</code></pre>
+<pre><code class='language-python'># ultralytics/models/yolo/yoloe/train_seg.py L5-L5
+from ultralytics.models.yolo.segment import SegmentationTrainer
+</code></pre>
+<pre><code class='language-python'># ultralytics/data/annotator.py L10-L53
+def auto_annotate(
+    data: str | Path,
+    det_model: str = &quot;yolo11x.pt&quot;,
+    sam_model: str = &quot;sam_b.pt&quot;,
+    device: str = &quot;&quot;,
+    conf: float = 0.25,
+    iou: float = 0.45,
+    imgsz: int = 640,
+    max_det: int = 300,
+    classes: list[int] | None = None,
+    output_dir: str | Path | None = None,
+) -&gt; None:
+    &quot;&quot;&quot;Automatically annotate images using a YOLO object detection model and a SAM segmentation model.
+
+    This function processes images in a specified directory, detects objects using a YOLO model, and then generates
+    segmentation masks using a SAM model. The resulting annotations are saved as text files in YOLO format.
+
+    Args:
+        data (str | Path): Path to a folder containing images to be annotated.
+        det_model (str): Path or name of the pre-trained YOLO detection model.
+        sam_model (str): Path or name of the pre-trained SAM segmentation model.
+        device (str): Device to run the models on (e.g., &#x27;cpu&#x27;, &#x27;cuda&#x27;, &#x27;0&#x27;). Empty string for auto-selection.
+        conf (float): Confidence threshold for detection model.
+        iou (float): IoU threshold for filtering overlapping boxes in detection results.
+        imgsz (int): Input image resize dimension.
+        max_det (int): Maximum number of detections per image.
+        classes (list[int], optional): Filter predictions to specified class IDs, returning only relevant detections.
+        output_dir (str | Path, optional): Directory to save the annotated results. If None, creates a default directory
+            based on the input data path.
+
+    Examples:
+        &gt;&gt;&gt; from ultralytics.data.annotator import auto_annotate
+        &gt;&gt;&gt; auto_annotate(data=&quot;ultralytics/assets&quot;, det_model=&quot;yolo11n.pt&quot;, sam_model=&quot;mobile_sam.pt&quot;)
+    &quot;&quot;&quot;
+    det_model = YOLO(det_model)
+    sam_model = SAM(sam_model)
+
+    data = Path(data)
+    if not output_dir:
+        output_dir = data.parent / f&quot;{data.stem}_auto_annotate_labels&quot;
+    Path(output_dir).mkdir(exist_ok=True, parents=True)
+
+    det_results = det_model(
+        data, stream=True, device=device, conf=conf, iou=iou, imgsz=imgsz, max_det=max_det, classes=classes
+</code></pre>
+</details>",2025-12-21 17:58:43.887318
