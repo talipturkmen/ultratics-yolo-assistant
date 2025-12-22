@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import logging
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -20,8 +21,10 @@ class Settings(BaseSettings):
         env_file=str(Path(__file__).resolve().parents[1] / ".env"),
         env_file_encoding="utf-8",
     )
-    print("Settings loaded from .env file")
-    print("Settings:", model_config)
+    # use loggging to indicate settings loaded
+
+    logging.info("Settings loaded from .env file")
+    logging.debug("Settings config: %s", model_config)
 
     def index_subdirs_list(self) -> list[str]:
         value = self.INDEX_SUBDIRS
