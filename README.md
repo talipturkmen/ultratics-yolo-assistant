@@ -64,6 +64,14 @@ uv run scripts/run_app.py
 
 Then open `http://localhost:8814` in your browser.
 
+### Tests
+
+Run the unit tests:
+
+```bash
+python -m unittest discover -s tests
+```
+
 ## Design Notes
 
 - **Chunking strategy**: Parse each Python file with AST and chunk by top-level definitions (classes/functions) plus any global code gaps. This keeps chunks semantically coherent while preserving module-level context. Oversized chunks are further split by token count with overlap to fit embedding limits. See `src/indexer.py`.
