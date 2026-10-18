@@ -35,7 +35,7 @@ def main():
     )
     # Launch the Gradio app
     interface = app.create_interface()
-    server_name = os.getenv("GRADIO_HOST", "0.0.0.0")
+    server_name = os.getenv("GRADIO_HOST", "127.0.0.1")
     server_port = int(os.getenv("GRADIO_PORT", "8814"))
     interface.launch(server_name=server_name, server_port=server_port)
     

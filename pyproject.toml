@@ -3,7 +3,7 @@ name = "ultra_yolo_assistant"
 version = "0.1.0"
 description = "Ultralytics YOLO code assistant using RAG (Retrieval-Augmented Generation)"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{name = "Talip Turkmen"}]
 
 dependencies = [
@@ -12,8 +12,8 @@ dependencies = [
     "sentence-transformers>=2.2.2",
     "pydantic>=2.1",
     "pydantic-settings>=2.0",
-    "requests>=2.28",
-    "gradio>=3.32",
+    "requests>=2.32",
+    "gradio>=5.0",
     "tiktoken>=0.4.0"
 ]
 

@@ -6,6 +6,7 @@ from .prompts import SYSTEM_PROMPT
 
 # We'll use environment variables directly for simplicity
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+DEFAULT_MODEL = "deepseek/deepseek-r1:free"
 
 _cached_settings = None
 
@@ -30,6 +31,10 @@ def generate_answer(question: str, code_chunks: list):
             model = getattr(settings, "OPENROUTER_MODEL", model)
     if not api_key:
         raise RuntimeError("OpenRouter API key is not set. Please set OPENROUTER_API_KEY.")
+    if not model:
+        settings = _get_settings()
+        model = getattr(settings, "OPENROUTER_MODEL", None) if settings else None
+        model = model or DEFAULT_MODEL
     
     # Include relevant code context in the user message
     if code_chunks:

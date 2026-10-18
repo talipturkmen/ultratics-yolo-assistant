@@ -59,7 +59,7 @@ def init_retriever(
     db_name: str,
     collection_name: str,
     embed_model_name: str,
-    vector_index_name: str = "default",
+    vector_index_name: str = "vector_index",
     embedding_path: str = "embedding",
 ):
     """Initialize the MongoDB client and embedding model for retrieval."""
@@ -79,7 +79,7 @@ def init_retriever(
         raise RuntimeError(f"Could not connect to MongoDB ({_redact_mongo_uri(mongo_uri)}): {e}") from e
     _collection = _client[db_name][collection_name]
     _embed_model_name = embed_model_name
-    _vector_index_name = vector_index_name or "default"
+    _vector_index_name = vector_index_name or "vector_index"
     _embedding_path = embedding_path or "embedding"
     _try_log_collection_diagnostics()
     # Load embedding model

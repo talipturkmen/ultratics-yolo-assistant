@@ -1,5 +1,7 @@
 # Ultralytics YOLO Code Assistant
 
+[![Tests](https://github.com/talipturkmen/ultratics-yolo-assistant/actions/workflows/tests.yml/badge.svg)](https://github.com/talipturkmen/ultratics-yolo-assistant/actions/workflows/tests.yml)
+
 This project is a small Retrieval-Augmented Generation (RAG) based code assistant for the [Ultralytics YOLO](https://github.com/ultralytics/ultralytics) repository. It can answer questions about the YOLO codebase by retrieving relevant code snippets and using an LLM (via OpenRouter) to generate helpful answers with citations.
 
 ## Features
@@ -64,12 +66,14 @@ uv run scripts/run_app.py
 
 Then open `http://localhost:8814` in your browser.
 
+The app binds to `127.0.0.1` by default. To expose it on your network, set `GRADIO_HOST=0.0.0.0` (and `GRADIO_PORT` to change the port). Anyone who can reach it can spend your OpenRouter credits.
+
 ### Tests
 
 Run the unit tests:
 
 ```bash
-python -m unittest discover -s tests
+uv run python -m unittest discover -s tests
 ```
 
 ## Design Notes

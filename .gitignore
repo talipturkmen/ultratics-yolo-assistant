@@ -1,7 +1,26 @@
-# add pycache files and folders
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# add .egg.info files and folders
 *.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Gradio runtime data (flagged samples, cache)
+.gradio/
+
+# Tooling / OS
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+.idea/
+.vscode/

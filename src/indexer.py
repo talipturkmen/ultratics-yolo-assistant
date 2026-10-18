@@ -2,7 +2,7 @@ import os
 import ast
 import hashlib
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from . import utils
 from .utils import count_tokens, split_chunks_by_tokens
@@ -52,6 +52,7 @@ def index_codebase(
         if hint:
             logging.error(hint)
         client.close()
+        raise RuntimeError(f"Could not connect to MongoDB ({_redact_mongo_uri(db_uri)})") from e
 
     db = client[db_name]
     coll = db[collection_name]
@@ -170,7 +171,7 @@ def index_codebase(
                         "end_line": cend,
                         "language": "python",
                         "chunk_id": idx,
-                        "updated_at": datetime.utcnow()
+                        "updated_at": datetime.now(timezone.utc)
                     }
                     doc = {
                         "_id": f"{norm_path}:{cstart}-{cend}",

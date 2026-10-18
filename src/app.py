@@ -1,5 +1,9 @@
+import html
+import logging
+
 import gradio as gr
-from . import retriever, llm
+
+from . import llm, retriever
 
 def create_interface():
     """Creates the Gradio interface for the Q&A assistant."""
@@ -12,13 +16,15 @@ def create_interface():
     def answer_question(query):
         try:
             chunks = retriever.get_relevant_chunks(query)
-        except Exception as e:
-            return f"*(Retriever error: {e})*", "*No relevant code context found.*"
+        except Exception:
+            logging.exception("Retriever failed")
+            return "*(Could not search the code index. See the server logs.)*", "*No relevant code context found.*"
 
         try:
             answer = llm.generate_answer(query, chunks)
-        except Exception as e:
-            return f"*(LLM error: {e})*", "*No relevant code context found.*"
+        except Exception:
+            logging.exception("LLM call failed")
+            return "*(Could not get an answer from the language model. See the server logs.)*", "*No relevant code context found.*"
         # Format retrieved chunks as collapsible HTML
         if chunks:
             details_html = "<details><summary>Show retrieved code context</summary>\n"
@@ -26,7 +32,6 @@ def create_interface():
                 meta = chunk['meta']
                 code_text = chunk['text']
                 # Escape HTML characters in code text
-                import html
                 code_esc = html.escape(code_text)
                 file_path = meta.get('path', 'unknown path')
                 start_line = meta.get('start_line', 0)
@@ -44,11 +49,7 @@ def create_interface():
         inputs=question,
         outputs=[answer_box, code_box],
         title="Ultralytics YOLO Code Assistant",
-        description="""Ask questions about the Ultralytics YOLO codebase. The assistant will retrieve relevant code snippets and explain **what the code does** and **how to use it**, citing file names and line numbers."""
+        description="""Ask questions about the Ultralytics YOLO codebase. The assistant will retrieve relevant code snippets and explain **what the code does** and **how to use it**, citing file names and line numbers.""",
+        flagging_mode="never",
     )
     return demo
-
-def main():
-    # Create and launch the Gradio app
-    interface = create_interface()
-    interface.launch()
